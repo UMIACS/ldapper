@@ -22,6 +22,22 @@ log = logging.getLogger(__name__)
 
 class BaseConnection(object):
 
+    """
+    A BaseConnection object can be used to connect to a given LDAP server.
+
+    These settings should be set on subclasses to know the server uri and the
+    basedn of the LDAP tree:
+
+      :URI:
+        The uri should contain the schema, host, and an optional port
+        field.
+
+        e.g. ldaps://ldap.example.com
+
+      :BASEDN:
+        The base DN of the LDAP tree.
+    """
+
     __human_readable_name__ = 'LDAP'
     attrlist = [
         '*', 'createTimestamp', 'modifyTimestamp',
@@ -32,7 +48,6 @@ class BaseConnection(object):
 
     def __init__(self, logindn, password, uri=None, certfile=None,
                  basedn=None):
-
         if basedn:
             self.basedn = basedn
         else:

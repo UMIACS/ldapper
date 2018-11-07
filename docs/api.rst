@@ -4,16 +4,8 @@ API Documentation
 
 This documentation is generated directly from the source code.
 
-.. automodule:: ldapper.connection
-   :members:
-   :undoc-members:
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
-====
-
-.. automodule:: ldapper.fields
-   :members:
-
-====
-
-.. automodule:: ldapper.ldapnode
-   :members:
+   apipages/*

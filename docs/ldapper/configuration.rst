@@ -51,3 +51,12 @@ If your LDAP is anonymous, you can start using this model right away:
     liam
     derek
     john
+
+
+Otherwise, set an active connection first.
+
+.. code-block:: python
+
+    Connection.set_connection(Connection.connect())
+
+This connection will be set statically for all Models to use.
