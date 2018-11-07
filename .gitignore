@@ -1,0 +1,15 @@
+*.swp
+*.pyc
+dist/
+build/
+*.egg-info/
+.DS_Store
+.ropeproject/
+.eggs/
+env/
+
+# tests
+.pytest_cache/
+htmlcov/
+.coverage
+.tox/
