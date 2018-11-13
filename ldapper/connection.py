@@ -156,6 +156,7 @@ class BaseConnection(object):
 
     @classmethod
     def connect_anon(cls, uri=None):
+        """Return an anonymous connection to the LDAP"""
         return cls(logindn=None, password=None, uri=uri)
 
     @classmethod
@@ -168,7 +169,7 @@ class BaseConnection(object):
         Return the ldap connection that was set
 
         If the connection object has not been set when this method is
-        called, then create an anonymous connection object.
+        called, then create and set an anonymous connection object.
         """
         try:
             return cls.conn
