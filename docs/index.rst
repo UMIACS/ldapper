@@ -19,6 +19,10 @@ Contents:
 
    ldapper/installation
    ldapper/configuration
+   ldapper/defining-models
+   ldapper/crud-operation-examples
+   ldapper/hooks
+   ldapper/advanced-topics
    api 
 
 
