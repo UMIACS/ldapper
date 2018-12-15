@@ -310,17 +310,12 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         are necessary to uniquely identify the object.  This is useful when
         constructing the DN or when calling a refetch().
         """
-        attrs = {}
-        for attr in self._meta.identifying_attrs:
-            # for lists we will use the first value
-            if isinstance(getattr(self, attr), list):
-                attrs[attr] = getattr(self, attr)[0]
-            else:
-                attrs[attr] = getattr(self, attr)
-        return attrs
+        return {a: getattr(self, a) for a in self._meta.identifying_attrs}
 
     def _ldap_supplemental_attrs(self):
         """Return the python names of the supplemental attributes."""
+        # TODO maybe these should by DateFields on LDAPNode and should just
+        # be inherited the normal way...
         return ['date_created', 'date_modified',
                 'user_created', 'user_modified']
 
@@ -376,11 +371,13 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
             # if primary is an LDAPNode descendent, then get its dnattr instead
             if isinstance(primary, LDAPNode):
                 primary = primary.dnattr()
+
         if dnprefix is None:
             if kwargs:
                 try:
                     dnprefix = cls._meta.primary_dnprefix % kwargs
                 except KeyError:
+                    # TODO maybe this should throw an exception
                     logging.warning(
                         'Unable to fetch %s %s. Missing keyword' %
                         (cls.hrn, primary)
@@ -389,6 +386,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
             else:
                 dnprefix = cls._meta.secondary_dnprefix
         logging.debug('Fetching %s with dnprefix %s' % (primary, dnprefix))
+
         conn = getattr(cls, 'connection').get_connection()
         filter = '(&(%s=%s)%s)' % \
             (cls._meta.rdnattr, primary, cls.objectclass_filter())

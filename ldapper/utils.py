@@ -98,11 +98,11 @@ def print_word_list(words, line_length=79):
     returning = ''
 
     for word in words:
+        if not isinstance(word, six.string_types):
+            word = str(word)
         if chars_left_in_line < len(word):
             returning += '\n'
             chars_left_in_line = line_length
-        if not isinstance(word, six.string_types):
-            word = str(word)
         returning += ' %s' % (word)
         chars_left_in_line -= (len(word) + 1)
 
