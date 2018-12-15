@@ -5,14 +5,14 @@ from __future__ import absolute_import
 
 import pytest
 
-from ldapper.connection import BaseConnection
-from ldapper.ldapnode import LDAPNode
 from ldapper.fields import (
     BinaryField,
     IntegerField,
     ListField,
     StringField,
 )
+
+from .utils import MyLDAPNode
 
 
 class TestStringField:
@@ -94,14 +94,7 @@ class TestIntegerField:
 class TestBinaryField:
 
     def test_binary_field_pretty_print(self):
-        class Connection(BaseConnection):
-            BASE_DN = 'dc=umiacs,dc=umd,dc=edu'
-            URI = 'ldaps://ldap.umiacs.umd.edu'
-
-        class MyLdapNode(LDAPNode):
-            connection = Connection
-
-        class Foo(MyLdapNode):
+        class Foo(MyLDAPNode):
             photo = BinaryField('photo')
             name = StringField('name')
 
