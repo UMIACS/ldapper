@@ -1,0 +1,4 @@
+dn: ou=people,dc=acme,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: people
