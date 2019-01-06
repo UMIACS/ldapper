@@ -131,10 +131,8 @@ def remove_empty_strings(val):
 
 def stringify(args):
     """
-    Given a hash, turn values that are smart objects into dumb string
-    representations.
-
-    For example, if the hash is {'cr': CR}, return {'cr': CR.cr}.
+    Given a hash, turn values that are LDAPNode objects into string
+    representations based off the primary attribute.
     """
     returning = {}
     for attr in args:

@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
-import ldapper
 from ldapper.utils import (
+    dn_attribute,
     strip_dn_path,
     middle_dn,
     inflect_given_cardinality,
     list_items_to_sentence,
+    remove_empty_strings,
 )
 
 
 class TestUtils(object):
 
     def test_dn_attribute(self):
-        assert 'foo' == ldapper.utils.dn_attribute('cn=foo,dc=bar', 'cn')
-        assert 'foo' == ldapper.utils.dn_attribute('cn=foo,cn=bar,dc=ba', 'cn')
-        assert ldapper.utils.dn_attribute('cn=foo,dc=bar', 'uid') is None
+        assert dn_attribute('cn=foo,dc=bar', 'cn') == 'foo'
+        assert dn_attribute('cn=foo,cn=bar,dc=ba', 'cn') == 'foo'
+        assert dn_attribute('cn=foo,dc=bar', 'uid') is None
 
     def test_strip_dn_path(self):
         dn = 'cn=foo,ou=groups,dc=example'
@@ -41,3 +42,9 @@ class TestUtils(object):
         assert list_items_to_sentence(words[:2]) == 'one and two'
         assert list_items_to_sentence(words[:3]) == 'one, two, and three'
         assert list_items_to_sentence([]) is None
+
+    def test_remove_empty_strings(self):
+        assert remove_empty_strings('foo') == 'foo'
+        assert remove_empty_strings(['foo', 'bar', '', None]) == ['foo', 'bar']
+        assert remove_empty_strings(False) is False
+        assert remove_empty_strings('') is None
