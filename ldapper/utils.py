@@ -33,12 +33,12 @@ def strip_dn_path(dn, left=None, right=None):
 
 
 def middle_dn(dn, right):
-    """Strip the top rdn and the right and return what's left."""
+    """Strip the first DN component and the right and return what's left."""
     try:
-        x, y = dn.split(',', 1)
+        first, rest = dn.split(',', 1)
     except ValueError:
         return None
-    return strip_dn_path(y, right=right)
+    return strip_dn_path(rest, right=right)
 
 
 def get_attr(entry, attr, index=0):
