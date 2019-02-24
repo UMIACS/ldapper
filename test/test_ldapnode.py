@@ -42,10 +42,16 @@ class Person(MyLDAPNode):
 
 person_kwargs = {'uid': 'liam', 'lastname': 'Monahan', 'fullname': 'Liam Monahan'}
 
+
 # TODO this should get moved somewhere more central
 conn = connection.connect(logindn='cn=admin,dc=acme,dc=org',
                           password='JonSn0w')
 connection.set_connection(conn)
+
+
+# TODO this should also get moved somewhere else once we get further along
+def get_person():
+    return Person(**person_kwargs)
 
 
 class TestLDAPNode:

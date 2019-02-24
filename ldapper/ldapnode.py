@@ -14,7 +14,7 @@ from ldapper.utils import (
     bolded,
     get_attr,
     inflect_given_cardinality,
-    ldap_filter_string_from_list,
+    build_ldap_filter,
     list_items_to_sentence,
     middle_dn,
     print_word_list,
@@ -310,6 +310,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         are necessary to uniquely identify the object.  This is useful when
         constructing the DN or when calling a refetch().
         """
+        # TODO how will we handle lists?  This used to get the first elem
         return {a: getattr(self, a) for a in self._meta.identifying_attrs}
 
     def _ldap_supplemental_attrs(self):
@@ -974,10 +975,10 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
     @classmethod
     def objectclass_filter(cls):
         """Return a string LDAP filter from the objectClass attributes"""
-        f = ldap_filter_string_from_list(
+        f = build_ldap_filter(
             op='&', attrname='objectClass', items=cls._meta.objectclasses)
         if cls._meta.excluded_objectclasses:
-            n = ldap_filter_string_from_list(
+            n = build_ldap_filter(
                 op='!', attrname='objectClass',
                 items=cls._meta.excluded_objectclasses)
             f = '(&%s%s)' % (f, n)

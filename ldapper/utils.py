@@ -41,20 +41,25 @@ def middle_dn(dn, right):
     return strip_dn_path(rest, right=right)
 
 
-def get_attr(entry, attr, index=0):
-    """ Returns the first (or specfied) entry for a attribute in the
-        entry.  This supports the attribute not existing in the entry
-        in which case the result will be None."""
+def get_attr(entry, attr):
+    """
+    Return the first value for an attribute in the given entry.
+
+    If the attribute does not exist in the entry, return `None`.
+    """
     a = entry.get(attr)
     if a is not None:
-        return a[index]
+        return a[0]
     else:
         return None
 
 
 def get_attrlist(entry, attr):
-    """ Returns the list of the attributes in the entry.  If the attribute
-        does not exist in the entry it will return None."""
+    """
+    Returns the whole list of values for an attribute in the given entry.
+
+    If the attribute does not exist in the entry, return `None`.
+    """
     a = entry.get(attr)
     if a is not None:
         return a
@@ -73,7 +78,27 @@ def inflect_given_cardinality(word, num_items):
         return pluralize(word)
 
 
-def ldap_filter_string_from_list(op='&', attrname='objectClass', items=None):
+def build_ldap_filter(op='&', attrname='objectClass', items=None):
+    """
+    Return a LDAP filter string.
+
+    Arguments:
+        op -- The search filter operator to use.  Commonly one of
+            the following based on the LDAP server dialect:
+                &       AND
+                |       OR
+                !       NOT
+                =       Equal to
+                ~=      Approximately equal to
+        attrname -- The attribute to search on.  Forms the left-hand part
+            of the filter subquery expressions.
+        items -- The list of items to create subfilters over.
+
+    Exceptions:
+        ValueError - will be raised if there are no items
+    """
+    if not items:
+        raise ValueError("items list must exist")
     inside = ''.join(['(%s=%s)' % (attrname, item) for item in items])
     return '(%s%s)' % (op, inside)
 
@@ -100,7 +125,7 @@ def print_word_list(words, line_length=79):
     for word in words:
         if not isinstance(word, six.string_types):
             word = str(word)
-        if chars_left_in_line < len(word):
+        if chars_left_in_line < len(word) + 1:
             returning += '\n'
             chars_left_in_line = line_length
         returning += ' %s' % (word)
@@ -132,7 +157,7 @@ def remove_empty_strings(val):
 def stringify(args):
     """
     Given a hash, turn values that are LDAPNode objects into string
-    representations based off the primary attribute.
+    representations based off the primary dn attribute.
     """
     returning = {}
     for attr in args:
