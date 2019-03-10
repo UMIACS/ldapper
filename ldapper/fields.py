@@ -12,21 +12,24 @@ from ldapper.utils import (
 
 class Field(object):
 
-    # derived/inferred/computed
-    #
-    # When derived = True:
-    #  * field is derived from something like the DN usually
-    #  * is not a real/concrete attribute in ldap and thus cannot
-    #    be saved to the LDAP
-    #  * should not appear in diff() results
-    derived = False
-
     """
     A representation of an LDAP attribute.
 
-    A Field knows how to take a value from LDAP and convert it to a Python
+    A ``Field`` knows how to take a value from LDAP and convert it to a Python
     object.  It know how to go the other way, too: taking a Python value
     and converting it to a representation suitable for LDAP modifications.
+    """
+
+    derived = False
+    """
+    Is the ``Field`` derived/inferred/computed?
+
+    When ``derived=True``, the ``Field``:
+
+      * is derived from something like the DN usually
+      * is not a concrete attribute in ldap and thus cannot
+        be saved to the LDAP
+      * should not appear in diff() results
     """
 
     def __init__(self, ldap, optional=False, readonly=False, printable=True):
@@ -46,9 +49,18 @@ class Field(object):
         self.printable = printable
 
     def default_value(self):
+        """The value used for the field is none is provided."""
         return None
 
     def coerce_for_python(self, value):
+        """
+        Returns a transformed value for the ``value`` provided.
+
+        This will get invoked both when loading a value for this Field out
+        of the LDAP or when creating a new object.
+
+        The default implementation returns the value unchanged.
+        """
         return value
 
 

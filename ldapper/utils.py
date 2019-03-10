@@ -79,23 +79,43 @@ def inflect_given_cardinality(word, num_items):
 
 
 def build_ldap_filter(op='&', attrname='objectClass', items=None):
-    """
-    Return a LDAP filter string.
+    """Return an LDAP search filter string.
 
-    Arguments:
-        op -- The search filter operator to use.  Commonly one of
-            the following based on the LDAP server dialect:
-                &       AND
-                |       OR
-                !       NOT
-                =       Equal to
-                ~=      Approximately equal to
-        attrname -- The attribute to search on.  Forms the left-hand part
-            of the filter subquery expressions.
-        items -- The list of items to create subfilters over.
+    Parameters
+    ----------
+    op : str
+        The search filter operator to use.
+        Commonly one of the following based on the LDAP server dialect:
 
-    Exceptions:
-        ValueError - will be raised if there are no items
+        +------------------+------------------------+
+        | Logical Operator | Description            |
+        +==================+========================+
+        | &                | AND                    |
+        +------------------+------------------------+
+        | |                | OR                     |
+        +------------------+------------------------+
+        | !                | NOT                    |
+        +------------------+------------------------+
+        | =                | Equal to               |
+        +------------------+------------------------+
+        | ~=               | Approximately equal to |
+        +------------------+------------------------+
+
+    attrname : str
+        The attribute to search on.  Forms the left-hand part
+        of the filter subquery expressions.
+    items : list
+        The items to create subfilters over.
+
+    Returns
+    -------
+    str
+        the constructed LDAP filter.
+
+    Raises
+    ------
+    ValueError
+        if there are no ``items``.
     """
     if not items:
         raise ValueError("items list must exist")

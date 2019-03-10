@@ -42,6 +42,7 @@ release = __version__
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -177,3 +178,6 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_member_order = 'bysource'
