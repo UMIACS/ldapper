@@ -1,3 +1,5 @@
+.. _configuration:
+
 Configuration
 =============
 
@@ -59,4 +61,5 @@ Otherwise, set an active connection first.
 
     Connection.set_connection(Connection.connect())
 
-This connection will be set statically for all Models to use.
+
+The connection will be set statically for all Models to use.
