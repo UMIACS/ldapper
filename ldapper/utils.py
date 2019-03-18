@@ -138,7 +138,7 @@ def list_items_to_sentence(items):
 
 
 def print_word_list(words, line_length=79):
-    """Given an array, print it in a condensed form separated by spaces"""
+    """Given a list, print it in a condensed form separated by spaces"""
     chars_left_in_line = line_length
     returning = ''
 
