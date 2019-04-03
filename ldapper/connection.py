@@ -95,7 +95,7 @@ class BaseConnection(object):
         else:
             tmpuri = uri
 
-        for x in range(retries):
+        for x in range(1, retries + 1):
             if logindn is None:
                 logindn = input('Enter a %s loginDN or username: ' % name)
             if password is None:
@@ -211,7 +211,7 @@ class BaseConnection(object):
         if dn is None:
             return dn
         parts = dn.split(',')
-        return parts[0].split('=')
+        return parts[0].split('=')[1]
 
     def exists(self, dn):
         scope = ldap.SCOPE_BASE
