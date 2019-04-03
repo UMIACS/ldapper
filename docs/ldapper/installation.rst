@@ -16,7 +16,7 @@ Install the latest version from PyPI:
 Via Source
 ----------
 
-The project is hosted at https://github.com/UMIACS/ldapper and can be installed
+The project is hosted at https://github.com/umiacs/ldapper and can be installed
 using git:
 
 .. code-block:: console

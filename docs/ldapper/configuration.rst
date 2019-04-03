@@ -42,6 +42,16 @@ Create your first model:
         lastname = StringField('sn')
         common_names = ListField('cn')
 
+        class Meta:
+            objectclasses = ['top', 'inetOrgPerson']
+            primary = 'uid'
+            rdnattr = 'uid'
+            dn_format = 'uid=%(uid)s,ou=people'
+            primary_dnprefix = 'ou=people'
+            secondary_dnprefix = 'ou=people'
+            identifying_attrs = ['uid']
+            searchable_fields = ['uid', 'givenName', 'sn']
+
 
 If your LDAP is anonymous, you can start using this model right away:
 
