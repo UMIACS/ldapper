@@ -6,6 +6,7 @@ import pytest
 
 from ldapper.fields import (
     BinaryField,
+    DNPartField,
     IntegerField,
     ListField,
     StringField,
@@ -90,7 +91,46 @@ class TestIntegerField:
         assert field.sanitize_for_ldap(None) is None
 
 
+class TestDNPartField:
+
+    def test_dn_part_field_populate(self):
+        field = DNPartField('name')
+        assert field.populate('name=foo,dc=acme,dc=org', {}) == 'foo'
+
+    def test_dn_part_field_coerce_for_python(self):
+        class Foo(MyLDAPNode):
+            uid = StringField('uid')
+
+            class Meta:
+                primary = 'uid'
+
+        field = DNPartField('name')
+
+        # make sure that if a DNPartField is passed an LDAPNode that it
+        # uses the object's primary field value
+        liam = Foo(uid='liam')
+        assert field.coerce_for_python(liam) == 'liam'
+
+        # if this is anything else, then there is no coercion
+        assert field.coerce_for_python('byron') == 'byron'
+
+    def test_dn_part_field_sanitize_for_ldap(self):
+        field = DNPartField('name')
+        with pytest.raises(RuntimeError):
+            field.sanitize_for_ldap('foo')
+
 class TestBinaryField:
+
+    def test_binary_field_populate(self):
+        entry = {'photo': [b'01010101']}
+        photo = BinaryField('photo')
+        # don't try to make this a unicode string.  should stay as binary.
+        assert photo.populate('cn=foo', entry) == b'01010101'
+
+    def test_binary_field_sanitize_for_ldap(self):
+        photo = BinaryField('photo')
+        # the data is already in binary representation and should remain so
+        assert photo.sanitize_for_ldap(b'01010101') == b'01010101'
 
     def test_binary_field_pretty_print(self):
         class Foo(MyLDAPNode):
