@@ -34,7 +34,7 @@ DEFAULT_OPTIONS = (
 
 class Options:
 
-    def __init__(self, meta):
+    def __init__(self, meta, cls_name):
         self.meta = meta
         self.objectclasses = []
         self.excluded_objectclasses = []
@@ -44,7 +44,7 @@ class Options:
         self.secondary_dnprefix = None
         self.identifying_attrs = []
         self.searchable_fields = []
-        self.human_readable_name = None
+        self.human_readable_name = cls_name
         self.field_order = None
 
         if meta:
@@ -61,7 +61,7 @@ class LDAPNodeBase(type):
         attr_meta = attrs.pop('Meta', None)
         meta = attr_meta or getattr(new_cls, 'meta', None)
 
-        new_cls._meta = Options(meta)
+        new_cls._meta = Options(meta, cls_name=name)
         new_cls.primary = new_cls._meta.primary
 
         # Keep track of the fields for convenience

@@ -36,7 +36,7 @@ class Person(MyLDAPNode):
         secondary_dnprefix = 'ou=people'
         identifying_attrs = ['uid']
         searchable_fields = ['uid', 'cn', 'displayName', 'givenName', 'sn']
-        human_readable_name = 'Person'
+        human_readable_name = 'LDAP Person'
         field_order = ['uid', 'lastname', 'fullname', 'addresses']
 
 
@@ -67,11 +67,12 @@ class TestLDAPNode:
         assert Test._meta.secondary_dnprefix is None
         assert Test._meta.identifying_attrs == []
         assert Test._meta.searchable_fields == []
-        assert Test._meta.human_readable_name is None
+        assert Test._meta.human_readable_name == 'Test'
         assert Test._meta.field_order is None
 
     def test_ldapnode_metaclass_new(self):
         """Test that the __new__ functionality of the metaclass is working."""
+        assert Person._meta.human_readable_name == 'LDAP Person'
         assert Person.primary == 'uid'
         assert type(Person._fields['fullname']) is StringField
 
@@ -81,6 +82,7 @@ class TestLDAPNode:
             lastname = StringField('sn', optional=True)
         assert 'superpower' in SpecialPerson._fields
         assert 'uid' in SpecialPerson._fields
+
         # lastname should be overidden in the child class
         assert SpecialPerson._fields['lastname'].optional
 
