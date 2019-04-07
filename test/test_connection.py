@@ -2,6 +2,9 @@
 
 from __future__ import absolute_import
 
+import ldap
+import pytest
+
 from .utils import Connection
 
 
@@ -48,3 +51,14 @@ class TestConnection:
     def test_connection_whoami(self, connection):
         assert connection.whoami() == 'cn=admin,dc=acme,dc=org'
         assert connection.whoami_short() == 'admin'
+
+    def test_connection_exists(self, connection):
+        # happy path
+        assert connection.exists('cn=admin,dc=acme,dc=org')
+
+        # exists() does not try to catch this error
+        with pytest.raises(ldap.INVALID_DN_SYNTAX):
+            connection.exists('cnnn=foo,dc=acme,dc=org')
+
+        assert connection.exists('cn=liam,dc=acme,dc=org') is False
+        assert connection.exists('cn=🎂,dc=acme,dc=org') is False
