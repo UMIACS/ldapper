@@ -53,7 +53,7 @@ class Field(object):
         self.primary = primary
 
     def default_value(self):
-        """The value used for the field is none is provided."""
+        """The value used for the field if none is provided."""
         return None
 
     def coerce_for_python(self, value):

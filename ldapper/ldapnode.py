@@ -313,6 +313,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         Return the RDN attribute value as represented in the Python object,
         not as it necessarily is in the LDAP.
         """
+        # TODO this function can have a better name
         return getattr(self, self.primary)
 
     def dnattrs(self):
@@ -326,7 +327,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
 
     def _ldap_supplemental_attrs(self):
         """Return the python names of the supplemental attributes."""
-        # TODO maybe these should by DateFields on LDAPNode and should just
+        # TODO maybe these should be DateFields on LDAPNode and should just
         # be inherited the normal way...
         return ['date_created', 'date_modified',
                 'user_created', 'user_modified']
@@ -380,6 +381,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         if primary is None and cls.primary in kwargs.keys():
             primary = kwargs[cls.primary]
         else:
+            # TODO I do not think that you should be able to pass LDAPNodes in
             # if primary is an LDAPNode descendent, then get its dnattr instead
             if isinstance(primary, LDAPNode):
                 primary = primary.dnattr()
