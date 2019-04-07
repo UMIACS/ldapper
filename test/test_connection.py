@@ -6,6 +6,7 @@ import ldap
 import pytest
 
 from .utils import Connection
+from .test_ldapnode import get_person
 
 
 class TestConnection:
@@ -62,3 +63,22 @@ class TestConnection:
 
         assert connection.exists('cn=liam,dc=acme,dc=org') is False
         assert connection.exists('cn=🎂,dc=acme,dc=org') is False
+
+    def test_connection_ldif(self, connection):
+        p1 = get_person()
+        p1.uid = 'bob'
+        p2 = get_person()
+        p2.uid = 'alice'
+        p1.save()
+        p2.save()
+
+        output = connection.ldif('uid=*')
+        assert 'DN: uid=bob,ou=people,dc=acme,dc=org' in output
+        assert 'DN: uid=alice,ou=people,dc=acme,dc=org' in output
+
+        output = connection.ldif('uid=bob')
+        assert 'DN: uid=bob,ou=people,dc=acme,dc=org' in output
+        assert 'DN: uid=alice,ou=people,dc=acme,dc=org' not in output
+
+        p1.delete()
+        p2.delete()

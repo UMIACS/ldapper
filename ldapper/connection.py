@@ -339,17 +339,20 @@ class BaseConnection(object):
             raise
             return False
 
-    def print_LDIF(self, filter):
-        """Print an LDIF of all results returned for the given LDAP filter"""
+    def ldif(self, filter):
+        """Return an LDIF string of all results returned for the given filter"""
         log.debug("Using search filter : %s" % filter)
+
         results = self.search(filter=filter)
         if len(results) == 1:
             log.info("Found 1 entry")
         else:
             log.info("Found %s entries" % len(results))
+
+        output = ''
         for dn, entry in results:
-            print("-" * 72)
-            output = "DN: %s\n" % dn
+            output += "-" * 72 + "\n"
+            output += "DN: %s\n" % dn
             length = 0
             # first loop the attrs to figure out what the largest string is
             for attr in entry.keys():
@@ -357,12 +360,9 @@ class BaseConnection(object):
                     length = len(attr)
             # add one more for padding
             length += 1
-            output_format = '\n%%%ds: %%s' % length
-            for attr in entry:
-                value = entry[attr]
-                if isinstance(value, list):
-                    for a in value:
-                        output += output_format % (attr, a)
-                else:
-                    output += output_format % (attr, value)
-            print(output)
+            output_format = '%%%ds: %%s\n' % length
+            for attr, values in entry.items():
+                for val in values:
+                    output += output_format % (attr, val)
+            output += "\n"
+        return output
