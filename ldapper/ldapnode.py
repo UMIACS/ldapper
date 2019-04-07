@@ -26,7 +26,7 @@ from ldapper.utils import (
 log = logging.getLogger(__name__)
 
 DEFAULT_OPTIONS = (
-    'objectclasses', 'excluded_objectclasses', 'primary', 'rdnattr',
+    'objectclasses', 'excluded_objectclasses',
     'primary_dnprefix', 'secondary_dnprefix', 'identifying_attrs',
     'searchable_fields', 'human_readable_name', 'field_order', 'dn_format',
 )
@@ -38,8 +38,6 @@ class Options:
         self.meta = meta
         self.objectclasses = []
         self.excluded_objectclasses = []
-        self.primary = None
-        self.rdnattr = None
         self.primary_dnprefix = None
         self.secondary_dnprefix = None
         self.identifying_attrs = []
@@ -62,7 +60,6 @@ class LDAPNodeBase(type):
         meta = attr_meta or getattr(new_cls, 'meta', None)
 
         new_cls._meta = Options(meta, cls_name=name)
-        new_cls.primary = new_cls._meta.primary
 
         # Keep track of the fields for convenience
         new_cls._fields = {}
@@ -112,6 +109,20 @@ class LDAPNodeBase(type):
                     setattr(new_cls, ro_name, attr.default_value())
                 else:
                     setattr(new_cls, name, attr.default_value())
+
+        # Ensure that there is never more than one primary Field
+        #
+        # It might be acceptable for a class to have no primary fields
+        # yet.  It might be a mixin or an LDAPNode with no fields that is
+        # being created to set the connection class, which other classes will
+        # inherit from.
+        primaries = {k: f for (k, f) in new_cls._fields.items() if f.primary is True}
+        if len(primaries) > 1:
+            emsg = "%s can only have at most one primary field." % new_cls.__name__
+            raise ValueError(emsg)
+        if primaries:
+            new_cls.primary = primaries.keys()[0]
+            new_cls._primary_field = primaries.values()[0]
 
         # The class is now ready
         return new_cls
@@ -390,7 +401,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
 
         conn = getattr(cls, 'connection').get_connection()
         filter = '(&(%s=%s)%s)' % \
-            (cls._meta.rdnattr, primary, cls.objectclass_filter())
+            (cls._primary_field.ldap, primary, cls.objectclass_filter())
         basedn = '%s,%s' % (dnprefix, conn.basedn)
         try:
             result = conn.search(basedn=basedn, filter=filter)
@@ -710,10 +721,10 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
             filter = '(&%s%s)' % (cls.objectclass_filter(), filter)
 
         if prefix:
-            filter = '(&%s(%s=%s*))' % (filter, cls._meta.rdnattr, prefix)
+            filter = '(&%s(%s=%s*))' % (filter, cls._primary_field.ldap, prefix)
 
         if rdn_substring:
-            filter = '(&%s(%s=*%s*))' % (filter, cls._meta.rdnattr, rdn_substring)
+            filter = '(&%s(%s=*%s*))' % (filter, cls._primary_field.ldap, rdn_substring)
 
         if search_prefix:
             filter = '(&%s%s)' % (

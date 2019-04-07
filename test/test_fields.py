@@ -99,10 +99,7 @@ class TestDNPartField:
 
     def test_dn_part_field_coerce_for_python(self):
         class Foo(MyLDAPNode):
-            uid = StringField('uid')
-
-            class Meta:
-                primary = 'uid'
+            uid = StringField('uid', primary=True)
 
         field = DNPartField('name')
 
@@ -118,6 +115,7 @@ class TestDNPartField:
         field = DNPartField('name')
         with pytest.raises(RuntimeError):
             field.sanitize_for_ldap('foo')
+
 
 class TestBinaryField:
 
