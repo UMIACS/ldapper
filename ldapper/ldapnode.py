@@ -121,8 +121,8 @@ class LDAPNodeBase(type):
             emsg = "%s can only have at most one primary field." % new_cls.__name__
             raise ValueError(emsg)
         if primaries:
-            new_cls.primary = primaries.keys()[0]
-            new_cls._primary_field = primaries.values()[0]
+            new_cls.primary = list(primaries.keys())[0]
+            new_cls._primary_field = list(primaries.values())[0]
 
         # The class is now ready
         return new_cls
