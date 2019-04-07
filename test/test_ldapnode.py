@@ -22,15 +22,13 @@ class MyLDAPNode(LDAPNode):
 
 
 class Person(MyLDAPNode):
-    uid = StringField('uid')
+    uid = StringField('uid', primary=True)
     lastname = StringField('sn')
     fullname = StringField('cn')
     addresses = ListField('mailLocalAddress', optional=True)
 
     class Meta:
         objectclasses = ['top', 'inetOrgPerson']
-        primary = 'uid'
-        rdnattr = 'uid'
         dn_format = 'uid=%(uid)s,ou=people'
         primary_dnprefix = 'ou=people'
         secondary_dnprefix = 'ou=people'
@@ -61,8 +59,6 @@ class TestLDAPNode:
             pass
         assert Test._meta.objectclasses == []
         assert Test._meta.excluded_objectclasses == []
-        assert Test._meta.primary is None
-        assert Test._meta.rdnattr is None
         assert Test._meta.primary_dnprefix is None
         assert Test._meta.secondary_dnprefix is None
         assert Test._meta.identifying_attrs == []
@@ -88,7 +84,7 @@ class TestLDAPNode:
 
     def test_readonly_field(self, caplog):
         class ROPerson(Person):
-            uid = StringField('uid', readonly=True)
+            uid = StringField('uid', primary=True, readonly=True)
         person = ROPerson(uid='liam', lastname='Alpert', fullname='Ram Dass')
 
         # cannot set
@@ -109,6 +105,17 @@ class TestLDAPNode:
     def test_invalid_kwargs_to_ldapnode_init(self):
         with pytest.raises(TypeError):
             Person(uid='a', lastname='l', fullname='f', invalid='foo')
+
+    def test_primary_field_is_inherited(self):
+        # the primary field needs to be inherited
+        class UnixPerson(Person):
+            pass
+        assert UnixPerson.primary == 'uid'
+
+    def test_too_many_primary_fields(self):
+        with pytest.raises(ValueError):
+            class BogusPerson(Person):
+                another_primary = StringField('anotherPrimary', primary=True)
 
     def test_ldapnode_repr(self):
         p = Person(**person_kwargs)

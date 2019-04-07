@@ -32,7 +32,8 @@ class Field(object):
       * should not appear in diff() results
     """
 
-    def __init__(self, ldap, optional=False, readonly=False, printable=True):
+    def __init__(self, ldap, optional=False, readonly=False, printable=True,
+                 primary=False):
         """
         Initialize a Field.
 
@@ -42,11 +43,14 @@ class Field(object):
                        object creation. Defaults to False.
             readonly - The field cannot be modified after creation.
             printable - True if the field should show up in pretty_print()
+            primary - True if this is the field that primarily identifies
+                    the object.  Defaults to False.  Can only be one per class.
         """
         self.ldap = ldap
         self.optional = optional
         self.readonly = readonly
         self.printable = printable
+        self.primary = primary
 
     def default_value(self):
         """The value used for the field is none is provided."""
