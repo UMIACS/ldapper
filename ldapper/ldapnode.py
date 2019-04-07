@@ -322,8 +322,16 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         are necessary to uniquely identify the object.  This is useful when
         constructing the DN or when calling a refetch().
         """
-        # TODO how will we handle lists?  This used to get the first elem
-        return {a: getattr(self, a) for a in self._meta.identifying_attrs}
+        attrs = {}
+        for attr in self._meta.identifying_attrs:
+            # for lists we will use the first value
+            # TODO maybe having ListFields be an identifying_attr should
+            # be an error at the time of metaclass creation.
+            if isinstance(getattr(self, attr), list):
+                attrs[attr] = getattr(self, attr)[0]
+            else:
+                attrs[attr] = getattr(self, attr)
+        return attrs
 
     def _ldap_supplemental_attrs(self):
         """Return the python names of the supplemental attributes."""
