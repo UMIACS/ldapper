@@ -47,7 +47,7 @@ class TestListField:
     def test_populate(self):
         dn = 'cn=foo'
         field = ListField('cn')
-        assert field.populate(dn, {'cn': [b'liam', 'william']}) == ['liam', 'william']
+        assert field.populate(dn, {'cn': [b'liam', b'william']}) == ['liam', 'william']
         assert field.populate(dn, {}) == []
 
     def test_coerce_for_python(self):

@@ -47,7 +47,6 @@ class TestConnection:
     def test_connection_str(self, connection):
         expected = 'ldap://localhost:389 as cn=admin,dc=acme,dc=org'
         assert str(connection) == expected
-        assert unicode(connection) == expected
 
     def test_connection_whoami(self, connection):
         assert connection.whoami() == 'cn=admin,dc=acme,dc=org'
