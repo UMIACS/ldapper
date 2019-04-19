@@ -23,7 +23,7 @@ directory.  We will define a ``Person`` class.  Our Person will contain a
         connection = Connection
 
     class Person(BaseModel):
-        uid = fields.StringField('uid')
+        uid = fields.StringField('uid', primary=True)
         uidnumber = fields.IntegerField('uidNumber')
         firstname = fields.StringField('givenName')
         lastname = fields.StringField('sn')
@@ -32,15 +32,12 @@ directory.  We will define a ``Person`` class.  Our Person will contain a
 
         class Meta:
             objectclasses = ['top', 'inetOrgPerson', 'inetLocalMailRecipient']
-            primary = 'uid'
-            rdnattr = 'uid'
             dn_format = 'uid=%(uid)s,ou=people'
             primary_dnprefix = 'ou=people'
             secondary_dnprefix = 'ou=people'
             identifying_attrs = ['uid']
             searchable_fields = [
                 'uid', 'uidNumber', 'givenName', 'sn', 'mailLocalAddress']
-            human_readable_name = 'Person'
 
 Model definition uses the declaritive syntax seen in other popular ORMs like
 SQLAlchemy, Django, or Peewee.

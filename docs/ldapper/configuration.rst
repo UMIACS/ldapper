@@ -37,15 +37,13 @@ Create your first model:
     from ldapper.fields import ListField, StringField
 
     class Person(BaseModel):
-        uid = StringField('uid')
+        uid = StringField('uid', primary=True)
         firstname = StringField('givenName')
         lastname = StringField('sn')
         common_names = ListField('cn')
 
         class Meta:
             objectclasses = ['top', 'inetOrgPerson']
-            primary = 'uid'
-            rdnattr = 'uid'
             dn_format = 'uid=%(uid)s,ou=people'
             primary_dnprefix = 'ou=people'
             secondary_dnprefix = 'ou=people'
