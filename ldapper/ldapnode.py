@@ -523,9 +523,8 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         objectclasses = self.__class__._meta.objectclasses
         attrs['objectclass'] = [o.encode('utf-8') for o in objectclasses]
         for attr_name, field in self._fields.items():
-            # ignore attributes starting with a "-"
-            # also ignore fields that are derived (like DNPartField)
-            if attr_name.startswith('-') or field.derived:
+            # ignore fields that are derived (like DNPartField)
+            if field.derived:
                 continue
 
             val = getattr(self, attr_name)

@@ -193,6 +193,41 @@ class TestLDAPNode:
 
         p.delete()
 
+    def test_fetch_by(self):
+        p = Person(**person_kwargs)
+        p.save()
+
+        assert Person.fetch_by(attrs={}) is None
+        assert Person.fetch_by(attrs={'uid': p.uid}) == p
+        assert Person.fetch_by(attrs={'uid': p.uid + 'a'}) is None
+
+        p.delete()
+
+    def test_fetch_by_dn(self):
+        p = Person(**person_kwargs)
+        p.save()
+
+        assert Person.fetch_by_dn('uid=kfjsdlkjf,ou=people,dc=acme,dc=org') is None
+        assert Person.fetch_by_dn('uid,ou=people,dc=acme,dc=org') is None
+        assert Person.fetch_by_dn('malformed') is None
+        assert Person.fetch_by_dn(p.dn) == p
+
+        p.delete()
+
+    def test_refetch(self):
+        p = Person(**person_kwargs)
+        p.save()
+        p.lastname = p.lastname + 'aaa'
+
+        untainted_person = Person.fetch(p.uid)
+        assert untainted_person != p
+        assert untainted_person == p.refetch()
+
+        # assert that refetch does not modify the existing object
+        assert untainted_person != p
+
+        p.delete()
+
     def test_happy_path_crud(self):
         person = Person(
             uid='liam',
