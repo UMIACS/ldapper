@@ -1,9 +1,6 @@
 ldapper
 ========
 
-[![pipeline status](https://gitlab.umiacs.umd.edu/staff/ldapper/badges/master/pipeline.svg)](https://gitlab.umiacs.umd.edu/staff/ldapper/commits/master)
-[![coverage report](https://gitlab.umiacs.umd.edu/staff/ldapper/badges/master/coverage.svg)](https://gitlab.umiacs.umd.edu/staff/ldapper/commits/master)
-
 ldapper is a lightweight, expressive ORM for LDAP.
 
 It extends the robustncapabilities of python-ldap and augments it with
