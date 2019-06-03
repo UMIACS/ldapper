@@ -1,6 +1,8 @@
 ldapper
 ========
 
+[![Documentation Status](https://readthedocs.org/projects/ldapper/badge/?version=latest)](https://ldapper.readthedocs.io/en/latest/?badge=latest)
+
 ldapper is a lightweight, expressive ORM for LDAP.
 
 It extends the robust capabilities of python-ldap and augments it with higher-level interfaces to define your schema.  Listing and fetching all your LDAP objects is easy and straightforward.  Modifications and validation can be made with assurance using ldapper.
