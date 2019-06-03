@@ -23,7 +23,7 @@ setup(name="ldapper",
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.6',
-                   'Topic :: Communications :: LDAP', ],
+                   'Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP', ],
       install_requires=[
           "inflection",
           "python-ldap>=2.4.15",
