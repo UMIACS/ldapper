@@ -1,0 +1,22 @@
+dist: xenial  # required for Python >= 3.7
+language: python
+
+python:
+  - "2.7"
+  - "3.6"
+  - "3.7"
+
+services:
+  - docker
+
+before_install:
+  - docker pull umiacs/ldapper-test-ldap
+  - docker run -d -p 389:389 umiacs/ldapper-test-ldap
+  - docker ps -a
+
+install:
+  - python setup.py develop
+  - pip install -q pytest pytest-cov mock
+
+script:
+  - pytest --cov-report term --cov ldapper/

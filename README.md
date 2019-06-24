@@ -1,6 +1,7 @@
 ldapper
 ========
 
+[![Build Status](https://travis-ci.org/UMIACS/ldapper.svg?branch=master)](https://travis-ci.org/UMIACS/ldapper)
 [![Documentation Status](https://readthedocs.org/projects/ldapper/badge/?version=latest)](https://ldapper.readthedocs.io/en/latest/?badge=latest)
 
 ldapper is a lightweight, expressive ORM for LDAP.
