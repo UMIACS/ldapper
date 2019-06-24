@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+    openldap:
+        image: umiacs/ldapper-test-ldap
+        command: --copy-service
+        ports:
+            - 389:389
