@@ -88,3 +88,22 @@ class NoSuchDN(LdapperError):
     def __init__(self, dn):
         self.dn = dn
         self.msg = 'DN %s does not exist.' % dn
+
+
+class InvalidDN(LdapperError):
+
+    """Exception raised when a DN does not meet RFC 4514 syntax
+
+    Attributes:
+       dn -- the invalid dn
+       msg -- explanation of the error
+    """
+
+    def __init__(self, obj, name, dn):
+        self.obj = obj
+        self.name = name
+        self.dn = dn
+        if self.obj and self.name:
+            self.msg = '%s %s has an invalid dn format: %s' % (obj, name, dn)
+        else:
+            self.msg = 'Invalid DN format: %s' % dn

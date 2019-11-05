@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 
 import re
+import ldap
 
 import six
 from six.moves import map
 from inflection import singularize, pluralize
+from ldapper.exceptions import InvalidDN
 
 
 def bolded(val):
@@ -202,3 +204,10 @@ def to_list(possible_lst):
         return [possible_lst]
     else:
         return []
+
+
+def validate_dn(dn, class_name=None, object_name=None):
+    try:
+        ldap.dn.str2dn(dn)
+    except ldap.DECODING_ERROR:
+        raise InvalidDN(class_name, object_name, dn)
