@@ -4,6 +4,7 @@ import pytest
 
 from .test_ldapnode import get_person
 
+from ldapper.exceptions import InvalidDN
 from ldapper.utils import (
     bolded,
     dn_attribute,
@@ -18,6 +19,7 @@ from ldapper.utils import (
     stringify,
     to_list,
     print_word_list,
+    validate_dn,
 )
 
 
@@ -105,3 +107,10 @@ class TestUtils(object):
         assert ["foo"] == to_list("foo")
         assert [u"foo"] == to_list(u"foo")
         assert [] == to_list(3)
+
+    def test_validate_dn(self):
+        with pytest.raises(InvalidDN):
+            validate_dn('foo')
+        with pytest.raises(InvalidDN):
+            validate_dn('cn=foo,')
+        validate_dn('cn=foo,ou=bar')
