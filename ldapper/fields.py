@@ -32,6 +32,10 @@ class Field(object):
       * should not appear in diff() results
     """
 
+    # System attributes are properties managed by the LDAP that cannot be
+    # set by the user.  Things like createTimestamp, modifiedTimestamp
+    system = False
+
     def __init__(self, ldap, optional=False, readonly=False, printable=True,
                  primary=False):
         """
@@ -178,3 +182,14 @@ class BinaryField(Field):
 
     def sanitize_for_ldap(self, val):
         return val
+
+
+class SystemField(Field):
+    """
+    Meant for ldap attributes that are system-managed by the LDAP server.
+    """
+
+    system = True
+
+    def sanitize_for_ldap(self, val):
+        raise Exception('This Field may not be written to the LDAP')
