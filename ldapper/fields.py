@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import six
 
 from ldapper.utils import (
+    ad_date_parse,
     dn_attribute,
     get_attr,
     get_attrlist,
@@ -193,3 +194,13 @@ class SystemField(Field):
 
     def sanitize_for_ldap(self, val):
         raise Exception('This Field may not be written to the LDAP')
+
+
+class Win32TimestampField(StringField):
+    """
+    The 18-digit Active Directory timestamps, also named 'Windows NT time format'
+    """
+
+    def coerce_for_python(self, value):
+        if value:
+            return ad_date_parse(value)
