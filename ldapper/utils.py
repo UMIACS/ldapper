@@ -2,11 +2,20 @@ from __future__ import absolute_import
 
 import re
 import ldap
+import datetime as dt
 
 import six
 from six.moves import map
 from inflection import singularize, pluralize
 from ldapper.exceptions import InvalidDN
+
+
+WIN32_EPOCH = dt.datetime(1601, 1, 1)
+
+
+def ad_date_parse(ts):
+    """Parse an ActiveDirectory timestamp and return a datetime object"""
+    return WIN32_EPOCH + dt.timedelta(seconds=(int(ts) / 10000000))
 
 
 def bolded(val):
