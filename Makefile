@@ -6,3 +6,15 @@ tag:
 	git add $(PACKAGE)/__init__.py
 	git commit -m "Tagging $(VERSION)"
 	git tag -a $(VERSION) -m "Tagging $(VERSION)"
+
+.PHONY: build
+build: clean
+	python setup.py sdist bdist_wheel
+
+.PHONY: upload
+upload:
+	twine upload dist/*
+
+.PHONY: clean
+clean:
+	rm -rf dist/
