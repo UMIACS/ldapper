@@ -13,9 +13,10 @@ Requirements
 ------------
 ldapper requires:
 
-* Python >= 2.7, Python 3.6+
+* Python 3.6+
 * inflection
 
+Version 0.9.0 was the last to support Python 2.
 
 Usage
 -----

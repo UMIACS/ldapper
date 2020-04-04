@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-
-import six
-
 from ldapper.utils import (
     ad_date_parse,
     dn_attribute,
@@ -117,7 +113,7 @@ class StringField(Field):
 
     def sanitize_for_ldap(self, val):
         if val:
-            if not isinstance(val, six.string_types):
+            if not isinstance(val, str):
                 val = str(val)
             return val.encode('utf-8')
         else:

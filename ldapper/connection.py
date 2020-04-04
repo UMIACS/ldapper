@@ -1,11 +1,6 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 import re
 import logging
 from getpass import getpass
-
-from six.moves import input, range
 
 import ldap
 import ldap.modlist as modlist
@@ -363,6 +358,6 @@ class BaseConnection(object):
             output_format = '%%%ds: %%s\n' % length
             for attr, values in entry.items():
                 for val in values:
-                    output += output_format % (attr, val)
+                    output += output_format % (attr, val.decode())
             output += "\n"
         return output

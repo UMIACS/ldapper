@@ -1,11 +1,7 @@
-from __future__ import absolute_import
-
 import re
 import ldap
 import datetime as dt
 
-import six
-from six.moves import map
 from inflection import singularize, pluralize
 from ldapper.exceptions import InvalidDN
 
@@ -154,7 +150,7 @@ def print_word_list(words, line_length=79):
     returning = ''
 
     for word in words:
-        if not isinstance(word, six.string_types):
+        if not isinstance(word, str):
             word = str(word)
         if chars_left_in_line < len(word) + 1:
             returning += '\n'
@@ -176,7 +172,7 @@ def remove_empty_strings(val):
     """
     if type(val) is list:
         return [x for x in val if x]
-    elif isinstance(val, six.string_types):
+    elif isinstance(val, str):
         if len(val) == 0:
             return None
         else:
@@ -209,7 +205,7 @@ def to_list(possible_lst):
     """
     if isinstance(possible_lst, list):
         return possible_lst
-    elif isinstance(possible_lst, six.string_types):
+    elif isinstance(possible_lst, str):
         return [possible_lst]
     else:
         return []

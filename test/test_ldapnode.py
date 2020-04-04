@@ -54,7 +54,6 @@ class Person(MyLDAPNode):
         identifying_attrs = ['uid']
         searchable_fields = ['uid', 'cn', 'displayName', 'givenName', 'sn']
         human_readable_name = 'LDAP Person'
-        field_order = ['uid', 'lastname', 'fullname', 'addresses']
 
 
 person_kwargs = {'uid': 'liam', 'lastname': 'Monahan', 'fullname': 'Liam Monahan'}
@@ -83,7 +82,6 @@ class TestLDAPNode:
         assert Test._meta.identifying_attrs == []
         assert Test._meta.searchable_fields == []
         assert Test._meta.human_readable_name == 'Test'
-        assert Test._meta.field_order is None
 
     def test_ldapnode_metaclass_new(self):
         """Test that the __new__ functionality of the metaclass is working."""
