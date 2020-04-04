@@ -1,10 +1,7 @@
-from __future__ import absolute_import
-
 import logging
 from functools import partial
 
 import ldap
-from six import with_metaclass
 
 from ldapper.exceptions import ArgumentError
 from ldapper.fields import Field, BinaryField
@@ -26,7 +23,7 @@ log = logging.getLogger(__name__)
 DEFAULT_OPTIONS = (
     'objectclasses', 'excluded_objectclasses',
     'primary_dnprefix', 'secondary_dnprefix', 'identifying_attrs',
-    'searchable_fields', 'human_readable_name', 'field_order', 'dn_format',
+    'searchable_fields', 'human_readable_name', 'dn_format',
 )
 
 
@@ -41,7 +38,6 @@ class Options:
         self.identifying_attrs = []
         self.searchable_fields = []
         self.human_readable_name = cls_name
-        self.field_order = None
 
         if meta:
             for attr_name in DEFAULT_OPTIONS:
@@ -136,7 +132,7 @@ class LDAPNodeBase(type):
         return new_cls
 
 
-class LDAPNode(with_metaclass(LDAPNodeBase)):
+class LDAPNode(object, metaclass=LDAPNodeBase):
 
     sensitive_attributes = ['userPassword']
 
@@ -218,14 +214,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         length += 1
         output_format = '\n%%%ds: %%s' % length
 
-        # Python 2 does not respect class attribute definition order.
-        # Python 3.6+ added this feature in PEP 520.
-        if self._meta.field_order:
-            attr_names = self._meta.field_order
-        else:
-            attr_names = self._fields.keys()
-
-        for attr in attr_names:
+        for attr in self._fields.keys():
             if isinstance(getattr(self, attr), list):
                 for a in getattr(self, attr):
                     if isinstance(a, LDAPNode):
@@ -250,12 +239,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         length = 0
         bolded_length = 0
 
-        # Python 2 does not respect class attribute definition order.
-        # Python 3.6+ added this feature in PEP 520.
-        if self._meta.field_order:
-            attr_names = list(self._meta.field_order)
-        else:
-            attr_names = list(self._fields.keys())
+        attr_names = list(self._fields.keys())
 
         # figure out what the longest attribute name is
         # add one more for padding
@@ -512,7 +496,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
 
     @classmethod
     def _parse_ldap_entry(cls, dn, entry):
-        """Turn the the raw ldap result into a Python object."""
+        """Turn the raw ldap result into a Python object."""
         kwargs = {}
         for attr_name, field in cls._fields.items():
             kwargs[attr_name] = field.populate(dn, entry)
