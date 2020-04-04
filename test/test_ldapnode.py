@@ -212,6 +212,12 @@ class TestLDAPNode:
         assert Person.fetch_by_dn('malformed') is None
         assert Person.fetch_by_dn(p.dn) == p
 
+        # for setUp/tearDown efficiency's sake, test obj_exists() here too
+        assert Person.obj_exists(p.uid)
+        assert not Person.obj_exists(p.uid + 'a')
+
+        assert Person.dn_exists(p.dn)
+
         p.delete()
 
     def test_refetch(self):
@@ -260,5 +266,6 @@ class TestLDAPNode:
         )
         person.save()
         assert person.exists()
+
         person.delete()
         assert not person.exists()
