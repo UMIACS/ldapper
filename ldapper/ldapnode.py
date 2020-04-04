@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import logging
-from datetime import datetime
 from functools import partial
 
 import ldap
@@ -12,7 +11,6 @@ from ldapper.fields import Field, BinaryField
 from ldapper.logging import ProxyLogger
 from ldapper.utils import (
     bolded,
-    get_attr,
     inflect_given_cardinality,
     build_ldap_filter,
     list_items_to_sentence,
@@ -62,18 +60,18 @@ class LDAPNodeBase(type):
         new_cls._meta = Options(meta, cls_name=name)
 
         # Keep track of the fields for convenience
-        new_cls._fields = {}
+        fields = {}
 
         parents = [b for b in bases if isinstance(b, LDAPNodeBase)]
 
         # attrs only contains the attributes defined explicity on this
         # class.  We need to layer in the base classes' attrs.
         for parent in parents:
-            new_cls._fields.update(parent._fields)
+            fields.update(parent._fields)
 
         for name, attr in attrs.items():
             if isinstance(attr, Field):
-                new_cls._fields[name] = attr
+                fields[name] = attr
                 if attr.readonly:
                     # this is not the prettiest section of code, but hear me
                     # out: if a Field is readonly, we create it as a property.
@@ -109,6 +107,16 @@ class LDAPNodeBase(type):
                     setattr(new_cls, ro_name, attr.default_value())
                 else:
                     setattr(new_cls, name, attr.default_value())
+
+        # at this point the parent fields and the immediate fields have both been
+        # merged into fields.
+
+        # construct the attrlist. Use to ask ldap for specific attrs to return
+        new_cls._attrlist = [f.ldap for f in fields.values()]
+
+        new_cls._system_fields = {n: f for n, f in fields.items() if f.system}
+        new_cls._non_system_fields = {n: f for n, f in fields.items() if not f.system}
+        new_cls._fields = fields
 
         # Ensure that there is never more than one primary Field
         #
@@ -173,7 +181,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         the same value.
         """
         hash_result = hash("LTM")
-        for attr in self._fields.keys():
+        for attr in self._non_system_fields.keys():
             try:
                 hash_result = hash_result ^ hash(getattr(self, attr))
             except TypeError:
@@ -185,7 +193,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
             return False
         if self.__class__ != other.__class__:
             return False
-        for attr in self._fields.keys():
+        for attr in self._non_system_fields.keys():
             if getattr(self, attr) != getattr(other, attr):
                 return False
         return True
@@ -205,7 +213,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         """
         output = "DN: %s" % self.dn
         # first loop the attrs to figure out what the largest string is
-        length = max([len(attr) for attr in self._fields.keys()])
+        length = max([len(attr) for attr in self._fields.keys() if getattr(self, attr)])
         # add one more for padding
         length += 1
         output_format = '\n%%%ds: %%s' % length
@@ -249,8 +257,6 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         else:
             attr_names = list(self._fields.keys())
 
-        attr_names = attr_names + self._ldap_supplemental_attrs()
-
         # figure out what the longest attribute name is
         # add one more for padding
         length = max(len(attr) for attr in attr_names) + 1
@@ -259,7 +265,13 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         line_length = 79 - length - 1
         output_format = '\n%%%ds: %%s' % bolded_length
 
-        for attr in attr_names:
+        # now that the max line length has been determined, we need to split
+        # up the system attributes from all other attributes so that we can
+        # print the system attributes last.
+        system_attr_names = [n for n, f in self._fields.items() if f.system]
+        attr_names = [a for a in attr_names if a not in system_attr_names]
+
+        for attr in attr_names + system_attr_names:
             val = getattr(self, attr)
             if val is None:
                 continue
@@ -333,42 +345,6 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
                 attrs[attr] = getattr(self, attr)
         return attrs
 
-    def _ldap_supplemental_attrs(self):
-        """Return the python names of the supplemental attributes."""
-        # TODO maybe these should be DateFields on LDAPNode and should just
-        # be inherited the normal way...
-        return ['date_created', 'date_modified',
-                'user_created', 'user_modified']
-
-    def _parse_ldap_supplemental(self, entry):
-        """
-        Set the additional supplemental attributes on the python object if
-        present from the LDAP entry.  These can not be written back to the
-        LDAP becauase they are essentially only writable by the internal core
-        LDAP process.
-
-        The dates are in GMT and are converted to datetime objects
-        and the names are in DN format.
-        """
-        if 'modifyTimestamp' in entry:
-            time = get_attr(entry, 'modifyTimestamp').decode('utf-8')
-            self.date_modified = datetime.strptime(time, "%Y%m%d%H%M%SZ")
-        else:
-            self.date_modified = None
-        if 'createTimestamp' in entry:
-            time = get_attr(entry, 'createTimestamp').decode('utf-8')
-            self.date_created = datetime.strptime(time, "%Y%m%d%H%M%SZ")
-        else:
-            self.date_created = None
-        if 'modifiersName' in entry:
-            self.user_modified = get_attr(entry, 'modifiersName').decode('utf-8')
-        else:
-            self.user_modified = None
-        if 'creatorsName' in entry:
-            self.user_created = get_attr(entry, 'creatorsName').decode('utf-8')
-        else:
-            self.user_created = None
-
     @classmethod
     def create(cls, *args, **kwargs):
         return cls(*args, **kwargs)
@@ -414,7 +390,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
             (cls._primary_field.ldap, primary, cls.objectclass_filter())
         basedn = '%s,%s' % (dnprefix, conn.basedn)
         try:
-            result = conn.search(basedn=basedn, filter=filter)
+            result = conn.search(basedn=basedn, filter=filter, attrlist=cls._attrlist)
         except ldap.NO_SUCH_OBJECT:
             return None
         except ldap.FILTER_ERROR:
@@ -454,7 +430,6 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         if result is not None:
             dn, entry = result
             obj = cls._parse_ldap_entry(dn, entry)
-            obj._parse_ldap_supplemental(entry)
             logging.debug("Loaded %s %s Successfully" %
                           (obj.__class__.__name__, obj.dnattr()))
             return obj
@@ -522,9 +497,10 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         attrs = {}
         objectclasses = self.__class__._meta.objectclasses
         attrs['objectclass'] = [o.encode('utf-8') for o in objectclasses]
-        for attr_name, field in self._fields.items():
-            # ignore fields that are derived (like DNPartField)
-            if field.derived:
+        for attr_name, field in self._non_system_fields.items():
+            # ignore attributes starting with a "-"
+            # also ignore fields that are derived (like DNPartField)
+            if attr_name.startswith('-') or field.derived:
                 continue
 
             val = getattr(self, attr_name)
@@ -584,7 +560,7 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         """
         results = {}
         refetch = self.refetch()
-        for attr_name, field in self._fields.items():
+        for attr_name, field in self._non_system_fields.items():
             # derived fields do not exist as concrete fields on the entry, so
             # they should never show up in the diff.
             if field.derived:
@@ -749,13 +725,12 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
 
         conn = cls.connection.get_connection()
         basedn = '{},{}'.format(dnprefix, conn.basedn)
-        results = conn.search(basedn=basedn, filter=filter)
+        results = conn.search(basedn=basedn, filter=filter, attrlist=cls._attrlist)
         if max_results:
             num_results_processed = 0
             for dn, entry in results:
                 if num_results_processed < max_results:
                     o = cls._parse_ldap_entry(dn, entry)
-                    o._parse_ldap_supplemental(entry)
                     logging.debug("Loaded %s %s Successfully" %
                                   (o.__class__.__name__, o.dnattr()))
                     objs.append(o)
@@ -765,7 +740,6 @@ class LDAPNode(with_metaclass(LDAPNodeBase)):
         else:
             for dn, entry in results:
                 o = cls._parse_ldap_entry(dn, entry)
-                o._parse_ldap_supplemental(entry)
                 logging.debug("Loaded %s %s Successfully" %
                               (o.__class__.__name__, o.dnattr()))
                 objs.append(o)

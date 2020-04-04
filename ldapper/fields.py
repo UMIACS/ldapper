@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import six
 
 from ldapper.utils import (
+    ad_date_parse,
     dn_attribute,
     get_attr,
     get_attrlist,
@@ -31,6 +32,10 @@ class Field(object):
         be saved to the LDAP
       * should not appear in diff() results
     """
+
+    # System attributes are properties managed by the LDAP that cannot be
+    # set by the user.  Things like createTimestamp, modifiedTimestamp
+    system = False
 
     def __init__(self, ldap, optional=False, readonly=False, printable=True,
                  primary=False):
@@ -178,3 +183,24 @@ class BinaryField(Field):
 
     def sanitize_for_ldap(self, val):
         return val
+
+
+class SystemField(Field):
+    """
+    Meant for ldap attributes that are system-managed by the LDAP server.
+    """
+
+    system = True
+
+    def sanitize_for_ldap(self, val):
+        raise Exception('This Field may not be written to the LDAP')
+
+
+class Win32TimestampField(StringField):
+    """
+    The 18-digit Active Directory timestamps, also named 'Windows NT time format'
+    """
+
+    def coerce_for_python(self, value):
+        if value:
+            return ad_date_parse(value)

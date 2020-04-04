@@ -66,7 +66,7 @@ person.delete()
 
 Documentation
 -------------
-Coming soon.
+Available at https://ldapper.readthedocs.io/
 
 
 Testing

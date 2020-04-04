@@ -4,12 +4,26 @@ from __future__ import absolute_import
 
 import pytest
 
+from datetime import datetime
+
 from ldapper.connection import BaseConnection
 from ldapper.ldapnode import LDAPNode
 from ldapper.fields import (
     ListField,
     StringField,
+    SystemField,
 )
+
+
+class SystemStringField(SystemField, StringField):
+    pass
+
+
+class SystemDateField(SystemField, StringField):
+
+    def coerce_for_python(self, value):
+        if value:
+            return datetime.strptime(value, "%Y%m%d%H%M%SZ")
 
 
 class connection(BaseConnection):
@@ -19,6 +33,11 @@ class connection(BaseConnection):
 
 class MyLDAPNode(LDAPNode):
     connection = connection
+
+    date_created = SystemDateField('createTimestamp', optional=True)
+    date_modified = SystemDateField('modifyTimestamp', optional=True)
+    user_created = SystemStringField('creatorsName', optional=True)
+    user_modified = SystemStringField('modifiersName', optional=True)
 
 
 class Person(MyLDAPNode):
@@ -116,6 +135,41 @@ class TestLDAPNode:
         with pytest.raises(ValueError):
             class BogusPerson(Person):
                 another_primary = StringField('anotherPrimary', primary=True)
+
+    def test_non_system_fields(self):
+        assert (
+            sorted(['addresses', 'fullname', 'lastname', 'uid']) ==
+            sorted(Person._non_system_fields.keys())
+        )
+        assert (
+            sorted(['date_created', 'date_modified', 'user_created', 'user_modified']) ==
+            sorted(Person._system_fields.keys())
+        )
+
+    def test_system_fields(self):
+        person = Person(**person_kwargs)
+        person.save()
+
+        # test that system fields are not included in the diff
+        assert person.diff() == {}
+
+        # a new object does not have a date_created yet
+        # you must refetch to populate those values
+        assert person.date_created is None
+        person = person.refetch()
+        assert person.date_created is not None
+
+        # changing the system fields should not have any effect since
+        # they will never be saved back to ldap
+        person.date_created = datetime.now()
+        assert person.diff() == {}
+
+        # system fields shall not used to generate the object hash
+        hash_before = hash(person)
+        person.date_modified = 'foo'
+        assert hash_before == hash(person)
+
+        person.delete()
 
     def test_ldapnode_repr(self):
         p = Person(**person_kwargs)
