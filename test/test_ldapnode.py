@@ -228,6 +228,30 @@ class TestLDAPNode:
 
         p.delete()
 
+    def test_diff(self):
+        person = Person(
+            uid='liam',
+            lastname='Monahan',
+            fullname='Liam Monahan',
+        )
+
+        assert person.diff() == {
+            'addresses': (None, []),
+            'fullname': (None, 'Liam Monahan'),
+            'lastname': (None, 'Monahan'),
+            'uid': (None, 'liam')
+        }
+
+        person.save()
+
+        assert person.diff() == {}
+
+        person.lastname = 'Jones'
+        assert person.diff() == {'lastname': ('Monahan', 'Jones')}
+        assert person.diff(with_ldap_names=True) == {'sn': ('Monahan', 'Jones')}
+
+        person.delete()
+
     def test_happy_path_crud(self):
         person = Person(
             uid='liam',
