@@ -1,3 +1,3 @@
 """a lightweight, expressive ORM for LDAP"""
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
