@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+import datetime
 
 import ldap
 
@@ -277,6 +278,12 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
                         output += tmp_output_format % (line)
             elif isinstance(val, LDAPNode):
                 output += output_format % (bolded(attr), val.dnattr())
+            elif isinstance(val, datetime.datetime):
+                if val.tzinfo:
+                    fmt = '%Y-%m-%d %H:%M:%S %Z'
+                else:
+                    fmt = '%Y-%m-%d %H:%M:%S'
+                output += output_format % (bolded(attr), val.strftime(fmt))
             else:
                 output += output_format % (bolded(attr), val)
 
