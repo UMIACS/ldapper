@@ -945,7 +945,7 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
             "Failed to set %s to %s on %s %s" %
             (attr_name,
              self._obscure_if_sensitive(attr_name, attr_value),
-             attr_value, self.hrn, self.dnattr()))
+             self.hrn, self.dnattr()))
 
     def log__delete_success(self):
         """Log a successful removal of an LDAPNode from the LDAP"""
