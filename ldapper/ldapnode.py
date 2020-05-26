@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+import datetime
 
 import ldap
 
@@ -277,6 +278,12 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
                         output += tmp_output_format % (line)
             elif isinstance(val, LDAPNode):
                 output += output_format % (bolded(attr), val.dnattr())
+            elif isinstance(val, datetime.datetime):
+                if val.tzinfo:
+                    fmt = '%Y-%m-%d %H:%M:%S %Z'
+                else:
+                    fmt = '%Y-%m-%d %H:%M:%S'
+                output += output_format % (bolded(attr), val.strftime(fmt))
             else:
                 output += output_format % (bolded(attr), val)
 
@@ -738,16 +745,25 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
 
         Attributes:
             op -- either '&', '|', or '!'
-            attrs -- a hash mapping attribute names to values to be matched
+            attrs -- a list of tuples or a dict mapping attribute names to
+                values to be matched
             kwargs -- any kwargs will be passed straight along to the
                 underlying call to cls.list().
         """
-        if not attrs or len(attrs) == 0:
+        if not attrs:
             return []
+
         filter = '(%s' % op
-        for attr in attrs:
-            filter += '(%s=%s)' % (attr, attrs[attr])
+        if isinstance(attrs, list):
+            for k, v in attrs:
+                filter += '(%s=%s)' % (k, v)
+        elif isinstance(attrs, dict):
+            for k, v in attrs.items():
+                filter += '(%s=%s)' % (k, v)
+        else:
+            raise ValueError('attrs must be of type list or dict')
         filter += ')'
+
         return cls.list(filter=filter, **kwargs)
 
     @classmethod
@@ -757,7 +773,8 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
         attribute values
 
         Attributes:
-            attrs -- a hash mapping attribute names to values to be matched
+            attrs -- a list of tuples or a dict mapping attribute names to
+                values to be matched
         """
         return cls._list_by(op='|', attrs=attrs, **kwargs)
 
@@ -769,7 +786,8 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
         value pair given, otherwise a exception will be raised.
 
         Attributes:
-            attrs -- a hash mappping of the attribute and value to negate
+            attrs -- a list of tuples or a dict mapping attribute names to
+                values to be matched
         """
         if len(attrs) != 1:
             raise ArgumentError('Only one attribute value pair supported')
@@ -782,7 +800,8 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
         given attribute values
 
         Attributes:
-            attrs -- a hash mapping attribute names to values to be matched
+            attrs -- a list of tuples or a dict mapping attribute names to
+                values to be matched
         """
         return cls._list_by(op='&', attrs=attrs, **kwargs)
 
@@ -926,7 +945,7 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
             "Failed to set %s to %s on %s %s" %
             (attr_name,
              self._obscure_if_sensitive(attr_name, attr_value),
-             attr_value, self.hrn, self.dnattr()))
+             self.hrn, self.dnattr()))
 
     def log__delete_success(self):
         """Log a successful removal of an LDAPNode from the LDAP"""
