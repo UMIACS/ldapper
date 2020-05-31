@@ -647,6 +647,11 @@ class LDAPNode(object, metaclass=LDAPNodeBase):
             self.log__delete_failure()
 
     @classmethod
+    def filter(cls, q):
+        """Return a list of LDAPNodes filter based on the given Q object(s)"""
+        return cls.list(filter=q.compile(cls))
+
+    @classmethod
     def list(cls, filter=None, prefix=None, rdn_substring=None,
              search_prefix=None, search_string=None, dnprefix=None,
              max_results=None, **kwargs):
