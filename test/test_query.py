@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from ldapper.fields import StringField
 from ldapper.query import Q
 
@@ -76,4 +78,11 @@ class TestQ:
         assert qset.compile(Person) == '(&(givenName=Liam)(sn=Monahan)(uid=liam))'
 
     def test_attribute_misspelling(self):
-        pass
+        with pytest.raises(AttributeError):
+            Q(missingattr='foo').compile(Person)
+
+    def test_wrong_type(self):
+        with pytest.raises(TypeError):
+            Q(foo='bar') & 'foobar'
+        with pytest.raises(TypeError):
+            Q(foo='bar') | 'foobar'
