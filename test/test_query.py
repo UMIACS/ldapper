@@ -43,6 +43,30 @@ class TestQ:
         assert qset.compile(
             Person) == '(&(|(givenName=Alice)(givenName=Bob))(|(uid=liam)(uid=derek)))'
 
+    def test_complex_conditions3(self):
+        # Test that And() & And() doesn't nest more than it needs to.
+        # Same goes for Or() | Or().
+        qset = (Q(lastname='Lennon') & Q(lastname='McCartney')) & (
+            Q(lastname='Harrison') & Q(lastname='Starr'))
+        assert qset.compile(
+            Person) == '(&(sn=Lennon)(sn=McCartney)(sn=Harrison)(sn=Starr))'
+
+        qset = (Q(lastname='Lennon') | Q(lastname='McCartney')) | (
+            Q(lastname='Harrison') | Q(lastname='Starr'))
+        assert qset.compile(
+            Person) == '(|(sn=Lennon)(sn=McCartney)(sn=Harrison)(sn=Starr))'
+
+    def test_complex_conditions4(self):
+        qset = (Q(lastname='Lennon') & Q(lastname='McCartney')) & \
+            Q(firstname='Ringo', lastname='Starr')
+        assert qset.compile(
+            Person) == '(&(sn=Lennon)(sn=McCartney)(givenName=Ringo)(sn=Starr))'
+
+        qset = (Q(lastname='Lennon') | Q(lastname='McCartney')) | \
+            Q(firstname='Ringo', lastname='Starr')
+        assert qset.compile(
+            Person) == '(|(sn=Lennon)(sn=McCartney)(&(givenName=Ringo)(sn=Starr)))'
+
     def test_deeply_nested(self):
         qset = (
             Q(firstname='Liam') &
@@ -61,9 +85,21 @@ class TestQ:
             ))
         )
         assert qset.compile(Person) == \
-            '(|(givenName=Liam)(&(sn=Smith)(&(uid=liam)(sn=Monahan))))'
+            '(|(givenName=Liam)(&(sn=Smith)(uid=liam)(sn=Monahan)))'
+
+        qset = Q(firstname='Liam') | (Q(lastname='Smith') | Q(uid='liam'))
+        assert qset.compile(Person) == \
+            '(|(givenName=Liam)(sn=Smith)(uid=liam))'
 
     def test_deeply_nested3(self):
+        qset = (Q(uid='liam') & Q(lastname='Monahan') & Q(firstname='Liam'))
+        assert qset.compile(
+            Person) == '(&(uid=liam)(sn=Monahan)(givenName=Liam))'
+
+        qset = (Q(uid='liam') | Q(lastname='Monahan') | Q(firstname='Liam'))
+        assert qset.compile(
+            Person) == '(|(uid=liam)(sn=Monahan)(givenName=Liam))'
+
         qset = (
             Q(firstname='Liam') |
             (Q(lastname='Smith') & (
@@ -71,11 +107,14 @@ class TestQ:
             ))
         )
         assert qset.compile(Person) == \
-            '(|(givenName=Liam)(&(sn=Smith)(&(uid=liam)(&(sn=Monahan)(givenName=Liam)))))'
+            '(|(givenName=Liam)(&(sn=Smith)(uid=liam)(sn=Monahan)(givenName=Liam)))'
 
     def test_multi_condition(self):
         qset = Q(firstname='Liam', lastname='Monahan', uid='liam')
         assert qset.compile(Person) == '(&(givenName=Liam)(sn=Monahan)(uid=liam))'
+
+        qset = Q(firstname='Liam', lastname='Monahan') | Q(uid='liam')
+        assert qset.compile(Person) == '(|(&(givenName=Liam)(sn=Monahan))(uid=liam))'
 
     def test_attribute_misspelling(self):
         with pytest.raises(AttributeError):
