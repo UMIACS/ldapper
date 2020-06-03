@@ -1,7 +1,7 @@
 .. _hooks:
 
 Hooks/Callbacks
-===================
+===============
 
 There are four callbacks that can be overridden to perform an action before
 or after and object is added or deleted.
@@ -24,11 +24,11 @@ or after and object is added or deleted.
          self.logger.info('Being called after delete.')
 
 _before_add_callback
-----------
+--------------------
 Gets called just before the LDAPNode is added to the LDAP.
 
 _after_add_callback
-----------
+-------------------
 Gets called just after the LDAPNode is added to the LDAP.
 
 .. note::
@@ -37,9 +37,9 @@ Gets called just after the LDAPNode is added to the LDAP.
    are only called when saving a new object, not when saving existing objects.
 
 _before_delete_callback
-----------
+-----------------------
 Gets called just before the LDAPNode is deleted from the LDAP.
 
 _after_delete_callback
-----------
+----------------------
 Gets called just after the LDAPNode is deleted from the LDAP.
