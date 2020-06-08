@@ -62,6 +62,10 @@ person = Person.fetch('liam')
 person.displayname = 'Chuck Yeager'
 person.save()
 person.delete()
+
+
+from ldapper.query import Q
+Person.filter(Q(firstname='Foo') | Q(lastname='Bar'))
 ```
 
 
