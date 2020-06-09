@@ -2,15 +2,23 @@
 
 from ldapper import __version__
 
+from os import path
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
+BASE_DIR = path.abspath(path.dirname(__file__))
+with open(path.join(BASE_DIR, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     name="ldapper",
     version=__version__,
     description="LDAP ORM for Python",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Liam Monahan",
     author_email="liam@liammonahan.com",
     url="https://github.com/UMIACS/ldapper",
