@@ -1,4 +1,5 @@
 PACKAGE = ldapper
+PYTHON = python3
 
 .PHONY: tag
 tag:
@@ -9,7 +10,7 @@ tag:
 
 .PHONY: build
 build: clean
-	python setup.py sdist bdist_wheel
+	$(PYTHON) setup.py sdist bdist_wheel
 
 .PHONY: upload
 upload:
